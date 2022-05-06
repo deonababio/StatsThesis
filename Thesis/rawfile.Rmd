@@ -1,0 +1,84 @@
+---
+title: "Impact defensive 3 point shot in the NBA"
+author: "Deon Ababio"
+date: '2022-02-28'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+#Defensive 3 seconds in the key was created in 2000. 
+#Having information from 1997-2003 would be good for analysis
+
+i = 1997
+while(i < 2006) {
+  assign(paste("season",i, sep=""), game_logs(seasons = i, nest_data = TRUE))
+  i= i + 1
+}
+
+season1997_2003 = do.call("rbind", list(season1997, season1998, season1999, season2000, season2001, season2002, season2003, season2004, season2005))
+
+```
+
+<!-- ```{r} -->
+<!-- #Question 1: What is the impact of the 3 second rule on 3 and 2 pointers in the NBA.  -->
+<!-- #first do it in totals, then proportionally -->
+
+<!-- doubleBar<- function(data) { -->
+
+<!--   data %>% group_by(yearSeason) %>% summarize(twopointfg = sum(fg2m)/sum(fg2a), threepointfg = sum(fg3m)/sum(fg3a)) -->
+
+<!--   #flip_results <- data.frame(Player = factor(column1, levels = c("Player A", "Player B")), -->
+<!--    #             Result = column2) -->
+
+<!--   return(ggplot(data = data, aes(x = yearSeason, y = c("twopointfg", "threepointfg"), fill = "type of shot")) + -->
+<!--   geom_bar(stat = "identity", position = position_dodge(), alpha = 0.75)  + -->
+<!--   ylim(0,800) + -->
+<!--   geom_text(aes(label = Freq), fontface = "bold", vjust = 1.5, -->
+<!--              position = position_dodge(.9), size = 4) + -->
+<!--   labs(x = "\n Coin Flip Outcome", y = "Frequency\n", title = "\n Coin Flip Results \n") + -->
+<!--   theme(plot.title = element_text(hjust = 0.5),  -->
+<!--         axis.title.x = element_text(face="bold", colour="red", size = 12), -->
+<!--         axis.title.y = element_text(face="bold", colour="red", size = 12), -->
+<!--         legend.title = element_text(face="bold", size = 10))) -->
+
+<!--   #return(View(data)) -->
+<!-- } -->
+
+<!-- x = doubleBar(season1997_2003) -->
+<!-- print(x) -->
+<!-- ``` -->
+
+```{r}
+
+x <- season1997_2003 %>% group_by(yearSeason) %>% summarize(twopointfg = sum(fg2m)/sum(fg2a), threepointfg = sum(fg3m)/sum(fg3a))
+
+#x$yearSeason <- as.character(x$yearSeason)
+  #flip_results <- data.frame(Player = factor(column1, levels = c("Player A", "Player B")),
+   #             Result = column2)
+  
+  ggplot(data = x) +
+  geom_line(aes(x = yearSeason, y = threepointfg, group = 1)) +
+    geom_vline(xintercept = 2001) + theme_bw()#+ #scale_y_continuous(0,1) #+
+  
+```
+
+```{r}
+ggplot(data = x) +
+  geom_line(aes(x = yearSeason, y = twopointfg, group = 1)) +
+    geom_vline(xintercept = 2001) + theme_bw()#+ #scale_y_continuous(0,1) #+
+```
+
+```{r}
+library(rjson)
+# shot data for Stephen Curry
+playerID <- 201939
+
+shotURL <- paste("http://stats.nba.com/stats/shotchartdetail?CFID=33&CFPARAMS=2014-15&ContextFilter=&ContextMeasure=FGA&DateFrom=&DateTo=&GameID=&GameSegment=&LastNGames=0&LeagueID=00&Location=&MeasureType=Base&Month=0&OpponentTeamID=0&Outcome=&PaceAdjust=N&PerMode=PerGame&Period=0&PlayerID=",playerID,"&PlayerPosition=&PlusMinus=N&Position=&Rank=N&RookieYear=&Season=2014-15&SeasonSegment=&SeasonType=Regular+Season&TeamID=0&VsConference=&VsDivision=&mode=Advanced&showDetails=0&showShots=1&showZones=0", sep = "")
+
+# import from JSON
+shotData <- fromJSON(file = shotURL, method="C")
+```
